@@ -1,0 +1,401 @@
+____________________  1. Initial Set Up - Django_project  ____________________
+
+1. Django 4.1.5 and Python 3.10
+2. Create Directory - blogs
+3. Create a virtual environment within this new directory
+    - python -m venv .venv
+    - Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser [..Windows Execution - Enable for running scripts]
+    - .venv\Scripts\Activate.ps1 [.. Activate - virtual environment]
+    - deactivate [..Deactivate and leave a virtual environment type]
+4. Install Django
+    - python -m pip install django~=4.1.5
+5. Pip to be on the latest version
+    - python -m pip install --upgrade pip
+6. Create a new Django project [.. Project Name = django_project]
+    - django-admin startproject django_project .
+7. Add .gitignore
+
+
+____________________ 2. Git SetUp -- Initialisation  ____________________
+    - git init
+    - git status
+    - git config user.name "ajmalrashadmarkz"
+    - git config user.email "ajmalrashadmarkz@gmail.com"
+    - git add .
+    - git commit -m "1. Setup Django Basics files"
+    -  git remote add origin https://github.com/ajmalrashadmarkz/11_22_09_Django_for_Beginners_Chapter-5_ Blog-App.git
+    - git push -u origin master
+
+____________________  3. Create App - blog ____________________
+    - Create pages app
+        ○ python manage.py startapp blogs
+    - Register the App
+        ○  django_project/settings.py
+        ○  INSTALLED_APPS = [
+			    .....
+			   "posts.apps.BlogConfig", # new
+			]
+	- Migrate the database
+	    ○ python manage.py migrate
+
+____________________  4. Setup Template Folder & Home Page  ____________________
+    - Create new directory in the following order
+        ○ pages[...App folder] -> templates [...New Dir] -> pages [...New Dir]
+    - Create Home Page
+        ○ pages\templates\pages\home.html
+
+                    OR
+    - Create new directory templates in project folder
+        ○ django_project -> templates [...New Dir]
+    - Create Home page
+        ○ django_project\templates\home.html
+    - Add templates in django_project/settings.py
+        TEMPLATES = [
+            {
+                ...
+                "DIRS": [BASE_DIR / "templates"], # new
+                ...
+            },
+        ]
+
+____________________  5. Create Class Based View for model class[...Post]  ____________________
+    - blog/views.py
+    - import ListView -> django.view.generic
+    - import Post -> models
+    - Create a class
+        ○ HomePageView(TemplateView [...Derived Class] ):
+               template_name = "webpage name" [...Class variable]
+
+____________________  6. SetUp Url for project and app  ____________________
+    - Create new urls.py file in app folder
+        ○ blog/urls.py
+        ○ import path
+        ○ import HomePageView
+        ○ urlpatterns = [
+                path("", HomePageView.as_view(), name="home" ),
+            ]
+    - Include app url in project url
+        ○ django_project/urls
+        ○ import include -> [... from django.urls]
+        ○ urlpatterns = [
+                path("", include("pages.urls")),
+            ]
+
+
+____________________  7. Create Database Model  ____________________
+    - blog/models.py
+    - import models, reverse
+    - Create a class ->
+        name post
+        attributes title[...char],Author[...foriegn key],body[...char]
+    - Author -> ForeignKey
+        allows for a many-to-one relationship
+        given user can be the author of many different blog posts
+        all many-to-one relationships such as a ForeignKey we must also specify an on_delete75 option
+    - get_absolute_url
+        URL named post_detail and pass in the pk
+
+    - Migration
+        python manage.py makemigrations blog
+        python manage.py migrate
+
+____________________  8. Django - Admin   ____________________
+    - Create a SuperUser
+        python manage.py createsuperuser
+    - register on
+        blog/admin.py
+
+____________________  9. Setup Django Admin Interface   ____________________
+    - Creation of super user
+        python manage.py createsuperuser
+    - import admin [... from contrib]
+    - import Post [... from models]
+    - Register the model with admin.site.register()
+        admin.site.register(Post)
+
+____________________  10. Change the Display Name [post] - Descriptive Naming - Automatically ____________________
+    - Descriptive Naming - Automatically
+    -  posts/models.py
+    - Add new function __str__ [... str() methods]
+       ○ model instance methods
+       ○ __str__() method is called whenever you call str() on an object
+            def __str__(self):
+                return self.text[:50]
+
+____________________  11. Setup the template   ____________________
+                    base.html
+    - Create a new html file -> base.html [include]
+        header -> Add blog page in header
+            <h1><a href="{% url "home" %}">Blog</a> </h1>
+    - Add block & end block for content loading
+
+                    home.html
+    - base.html extends in to home page
+        {% extends "base.html" %}
+    - define block content inside the block & end block
+        {% block content %}
+        {% for post in post_list %}
+            <div class="post-entry">
+                <h2><a href="">{{ post.title }}</a></h2>
+                <p>{{ post.body }}</p>
+            </div>
+        {% endfor %}
+        {% endblock content %}
+
+____________________  12. Static file Dealing   ____________________
+    - Create a new directory  in project folder -> static
+    - Update static url in settings
+        STATIC_URL = "/static/"
+    - Specify where the static folder available
+        STATICFILES_DIRS = [BASE_DIR / "static"]
+    - inside static folder create a new directory -> css
+    - Create a new file inside the css folder -> base.css
+
+                base.css
+    - header h1 a {
+        color: red;
+     }
+
+                base.html
+    - load the static folder
+        {% load static %}
+    - link the stylesheet
+        <link rel="stylesheet" href="{% static 'css/base.css' %}">
+
+____________________  13. Individual blog pages   ____________________
+                    # blog/views.py
+    - import DetailView -> django.views.generic
+    - Create new class -> BlogDetailView [Base Class - DetailView]
+    - Attributes model,template_name [model - Post, template_name - post_detail.html]
+
+                    #template/post_detail.html
+    - create a new html page
+    - extends base class
+    - create block -> content
+    - setup div
+        inside div h2 & p
+
+                    #blog/urls
+    - import BlogDetailView [view]
+    - setup path("", BlogDetailView.as_view(), name="....html")
+    - url as post/key
+
+                    #template/home.html
+    - setup hyperlink
+        url -> post_details with key
+
+
+
+
+
+____________________  14. SetUp ListView of Model  ____________________
+    - templates\base.html
+        <header>
+            <div class="nav-left">
+                <h1><a href="{% url 'post_list' %}">Django blog</a></h1>
+            </div>
+        </header>
+
+    - templates\blogs\post_list.html
+            {% extends "base.html" %}
+
+            {% block content %}
+                {% for post in post_list %}
+                    <div class="post-entry">
+                         <h2>{{ post.title }}</h2>
+                        <p>{{ post.body }}</p>
+                    </div>
+                {% endfor %}
+            {% endblock content %}
+
+    - blogs/views.py
+        class BlogListView(ListView):
+            model = Post
+
+    - blog/urls.py
+        path("",views.BlogListView.as_view(),name = "post_list"),
+
+____________________  15. Individual Blog Pages   ____________________
+    - templates\blogs\post_list.html
+        <h2><a href="{% url 'post_detail' post.pk %}">{{ post.title }}</a></h2>
+
+    - templates\blogs\post_detail.html
+        {% extends "base.html" %}
+
+        {% block content %}
+            <div class="post-entry">
+                <h2>{{ object.title }}</h2>
+                <p>{{ object.body }}</p>
+            </div>
+        {% endblock content %}
+
+    - blogs/views.py
+        class BlogDetailView(DetailView):
+            model = Post
+
+    - blog/urls.py
+        path("post/<int:pk>/",views.BlogDetailView.as_view(),name = "post_detail"),
+
+____________________  16. CreateView   ____________________
+    -templates\base.html
+        <div class="nav-right">
+           <a href="{% url 'post_create' %}">+ New Blog Post</a>
+        </div>
+
+    - templates\blogs\post_create.html
+        {% extends "base.html" %}
+
+        {% block content %}
+            <h1>New post</h1>
+            <form action="" method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <input type="submit" value="Save">
+            </form>
+        {% endblock content %}
+
+    - blogs/views.py
+        class BlogCreateView(CreateView):
+            model = Post
+            template_name = "blogs/post_create.html"
+            fields = ["title", "author","body"]
+
+     - blog/urls.py
+         path("post/new/",views.BlogCreateView.as_view(),name = "post_create"),
+
+____________________  17. UpdateView  ____________________
+    - templates\blogs\post_detail.html
+        <a href="{% url 'post_update' post.pk %}">+ Edit Blog Post</a>
+
+    - templates\blogs\post_update.html
+        {% extends "base.html" %}
+
+        {% block content %}
+            <h1>Edit post</h1>
+            <form action="" method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <input type="submit" value="Update">
+            </form>
+        {% endblock content %}
+
+    - blogs/views.py
+        class BlogUpdateView(UpdateView):
+            model = Post
+            template_name = "blogs/post_update.html"
+            fields = ["title", "body"]
+
+    - blog/urls.py
+        path("post/<int:pk>/edit/",views.BlogUpdateView.as_view(),name = "post_update"),
+
+
+____________________  18. DeleteView  ____________________
+    - templates\blogs\post_detail.html
+        <p><a href="{% url 'post_delete' post.pk %}">+ Delete Blog Post</a></p>
+
+    - templates\blogs\post_delete.html
+        {% extends "base.html" %}
+
+        {% block content %}
+          <h1>Delete post</h1>
+          <form action="" method="post">
+            {% csrf_token %}
+            <p>Are you sure you want to delete "{{ post.title }}"?</p>
+            <input type="submit" value="Confirm">
+          </form>
+        {% endblock content %}
+
+    - blogs/views.py
+        from django.urls import reverse_lazy
+
+
+        class  BlogDeleteView(DeleteView):
+            model = Post
+            template_name = "blogs/post_delete.html"
+            success_url = reverse_lazy("post_list")
+
+    - blog/urls.py
+            path("post/<int:pk>/delete/",views.BlogDeleteView.as_view(),name = "post_delete"),
+
+____________________  19. LoginView  ____________________
+    - django_project/urls.py
+        path("accounts/", include("django.contrib.auth.urls")),
+
+    - templates/registration/login.html
+        {% extends "base.html" %}
+
+        {% block content %}
+            <h2>Log In</h2>
+            <form method="post">{% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit">Log In</button>
+            </form>
+        {% endblock content %}
+
+    - django_project/settings.py
+        LOGIN_REDIRECT_URL = "post_list"
+
+____________________  20. Updated Homepage- is_authenticated attribute  ____________________
+    - templates/base.html
+        <div>
+            {% if user.is_authenticated %}
+                <p>Hi {{ user.username }}!</p>
+                <p><a href="{% url 'logout' %}">Log out</a></p>
+                {% else %}
+                <p>You are not logged in.</p>
+                <a href="{% url 'login' %}">Log In</a>
+            {% endif %}
+            {% block content %}
+            {% endblock content %}
+        </div>
+
+____________________  21. Logout  ____________________
+    - django_project/settings.py
+        LOGOUT_REDIRECT_URL = "post_list"
+
+____________________  22. Sign Up - UserCreationForm  ____________________
+    - create a dedicated new app, accounts
+        python manage.py startapp accounts
+
+    - django_project/settings.py
+        INSTALLED_APPS = [
+            "accounts.apps.AccountsConfig",
+        ]
+
+    - django_project/urls.py
+        path("accounts/", include("accounts.urls")),
+
+    - templates/accounts/signup.html
+        {% extends "base.html" %}
+
+        {% block content %}
+            <h2>Sign Up</h2>
+            <form method="post">{% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit">Sign Up</button>
+            </form>
+        {% endblock content %}
+
+    - accounts/views.py
+        from django.contrib.auth.forms import UserCreationForm
+        from django.urls import reverse_lazy
+        from django.views.generic import CreateView
+
+        # Create your views here.
+        class SignUpView(CreateView):
+            form_class = UserCreationForm
+            success_url = reverse_lazy("login")
+            template_name = "accounts/signup.html"
+
+    - accounts/urls.py
+        from django.urls import path
+        from .views import SignUpView
+
+        urlpatterns =[
+            path("signup/", SignUpView.as_view(), name="signup")
+        ]
+
+____________________  23. Sign Up Link  ____________________
+    - templates/base.html
+        ......................................|
+        <a href="{% url 'signup' %}">Sign Up</a>
